@@ -2,3 +2,4 @@
 config.json
 ServerInfo.json
 *.session.sql
+*.db

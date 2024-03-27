@@ -3,43 +3,108 @@ package me.undermon.maplogger;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpTimeoutException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import javax.sql.DataSource;
+
+import me.undermon.realityapi.Layer;
+import me.undermon.realityapi.Map;
+import me.undermon.realityapi.Mode;
+import me.undermon.realityapi.Server;
 import me.undermon.realityapi.Servers;
 
 public class MapLogger implements Runnable {
+	private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
-	private ConfigFile config;
+	private static final String logMapStatement = """
+		INSERT INTO history (
+			server, map, mode, layer, players, timestamp
+		) VALUES (?, ?, ?, ?, ?, ?);
+		""";
 
-	public MapLogger(ConfigFile config) {
+	private static final String readStatement = """
+		SELECT map, mode, layer, players, timestamp FROM history WHERE (
+			server = ?
+		) ORDER BY timestamp DESC LIMIT 1;
+		""";
+
+	
+	private final ConfigFile config;
+	private final DataSource dataSource;
+
+
+	public MapLogger(ConfigFile config, DataSource dataSource) {
 		this.config = config;
+		this.dataSource = dataSource;
 	}
 
 	@Override
 	public void run() {
 		try {
-			HttpRequest request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(Duration.ofSeconds(10)).build();
-			
-			HttpResponse<String> response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
-			
-			String serverInfo = response.body();
-
+			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(Duration.ofSeconds(10)).build();
+			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
 			// serverInfo = Files.readString(Paths.get("ServerInfo.json"));
 
-			List<String> ids = config.stream().map(t -> t.identifier()).toList();
-			Servers servers = Servers.from(serverInfo);
+			List<String> serverIdsToLog = config.stream().map(t -> t.identifier()).toList();
+			List<Server> serversToLog = Servers.from(response.body()).stream().
+				filter(server -> serverIdsToLog.contains(server.identifier())).
+				toList();
 
-			servers.stream().filter(t -> ids.contains(t.identifier())).toList().forEach(t -> System.out.println(t));
+			try (var connection = dataSource.getConnection()) {
+				for (Server server : serversToLog) {
+					logMapIfDifferent(connection, server);
+				}
+			}
 
 		} catch (HttpTimeoutException | InterruptedException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		};
+	}
+
+	private void logMapIfDifferent(Connection connection, Server server) throws SQLException {
+		boolean sameMap = false;
+
+		try (var read = connection.prepareStatement(readStatement)) {
+			read.setString(1, server.identifier());
+
+			ResultSet result = read.executeQuery();
+
+			if (result.next()) {
+				Map map = Map.valueOf(result.getString("map"));
+				Mode mode = Mode.valueOf(result.getString("mode"));
+				Layer layer = Layer.valueOf(result.getString("layer"));
+
+				if (server.map().equals(map) && server.mode().equals(mode) && server.layer().equals(layer)) {
+					sameMap = true;
+				}
+			}
+		}
+
+		if (!sameMap) {
+			try (var statement = connection.prepareStatement(logMapStatement)) {
+				statement.setString(1, server.identifier());
+				statement.setString(2, server.map().toString());
+				statement.setString(3, server.mode().toString());
+				statement.setString(4, server.layer().toString());
+				statement.setInt(5, server.connected());
+				statement.setString(6, ZonedDateTime.now().format(TIME_FORMAT));
+
+				statement.executeUpdate();
+			}
 		}
 	}
 
