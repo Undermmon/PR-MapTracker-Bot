@@ -1,6 +1,5 @@
 package me.undermon.maplogger;
 
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -9,12 +8,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import me.undermon.maplogger.ConfigFile.MonitoredServer;
 import me.undermon.realityapi.Layer;
 import me.undermon.realityapi.Map;
 import me.undermon.realityapi.Mode;
@@ -53,29 +54,27 @@ public class MapLogger implements Runnable {
 		try {
 			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(Duration.ofSeconds(10)).build();
 			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
-			// serverInfo = Files.readString(Paths.get("ServerInfo.json"));
+			// String serverInfo = Files.readString(Paths.get("ServerInfo.json"));
 
-			List<String> serverIdsToLog = config.stream().map(t -> t.identifier()).toList();
-			List<Server> serversToLog = Servers.from(response.body()).stream().
-				filter(server -> serverIdsToLog.contains(server.identifier())).
+			final List<Server> serversToBeLogged = Servers.from(response.body()).
+				stream().
+				filter(server -> config.stream().map(MonitoredServer::identifier).toList().contains(server.identifier())).
 				toList();
 
 			try (var connection = dataSource.getConnection()) {
-				for (Server server : serversToLog) {
-					logMapIfDifferent(connection, server);
+				for (Server server : serversToBeLogged) {
+					logIfMapChanged(connection, server);
 				}
 			}
 
-		} catch (HttpTimeoutException | InterruptedException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (HttpTimeoutException e) {
+			Application.LOGGER.warn("Timed out connecting to %s at %s".formatted(config.realitymodAPI(), LocalDateTime.now()));
 		} catch (Exception e) {
-			e.printStackTrace();
-		};
+			Application.LOGGER.error(e.getMessage());
+		}
 	}
 
-	private void logMapIfDifferent(Connection connection, Server server) throws SQLException {
+	private void logIfMapChanged(Connection connection, Server server) throws SQLException {
 		boolean sameMap = false;
 
 		try (var read = connection.prepareStatement(readStatement)) {
@@ -95,13 +94,20 @@ public class MapLogger implements Runnable {
 		}
 
 		if (!sameMap) {
+			String timestamp = ZonedDateTime.now().format(TIME_FORMAT);
+			String label = config.stream().filter(ms -> ms.identifier().equals(server.identifier())).findFirst().get().label();
+
+			Application.LOGGER.info("Logged '%s' [%s, %s, %s, %s, %d] at %s".formatted(
+				label, server.identifier(), server.map(), server.mode(), server.layer(), server.connected(), timestamp)
+			);
+
 			try (var statement = connection.prepareStatement(logMapStatement)) {
 				statement.setString(1, server.identifier());
 				statement.setString(2, server.map().toString());
 				statement.setString(3, server.mode().toString());
 				statement.setString(4, server.layer().toString());
 				statement.setInt(5, server.connected());
-				statement.setString(6, ZonedDateTime.now().format(TIME_FORMAT));
+				statement.setString(6, timestamp);
 
 				statement.executeUpdate();
 			}

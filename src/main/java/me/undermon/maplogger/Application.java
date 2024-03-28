@@ -1,5 +1,6 @@
 package me.undermon.maplogger;
 
+import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -9,30 +10,42 @@ import javax.sql.DataSource;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.interaction.SlashCommandBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteDataSource;
+
+import me.undermon.maplogger.ConfigFile.InvalidConfigurationFile;
 
 public class Application {
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	static Logger LOGGER = LoggerFactory.getLogger("MapLogger");
 
-	public static void main(String[] args) throws Exception {
-		ConfigFile config = ConfigFile.read();
-		DataSource dataSource = setupDatabase();
-		
-		MapLogger mapLogger = new MapLogger(config, dataSource);
+	public static void main(String[] args) {
+		try {
+			ConfigFile config = ConfigFile.read();
+			DataSource dataSource = setupDatabase();
 
-		executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
+			MapLogger mapLogger = new MapLogger(config, dataSource);
+
+			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
+
+		} catch (InvalidConfigurationFile e) {
+			LOGGER.error("Invalid configuration file");
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+		}
 	}
 
-	private static DataSource setupDatabase() {
+	private static DataSource setupDatabase() throws SQLException {
 		var dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:sample.db");
+		dataSource.setUrl("jdbc:sqlite:sample.db"); // TODO change db name
 
 		createDatabaseSchema(dataSource);
 		
 		return dataSource;
 	}
 
-	private static void createDatabaseSchema(DataSource dataSource) {
+	private static void createDatabaseSchema(DataSource dataSource) throws SQLException {
 		final String sql = """
 			CREATE TABLE IF NOT EXISTS history (
 				id INTEGER PRIMARY KEY,
@@ -47,8 +60,6 @@ public class Application {
 
 		try (var statement = dataSource.getConnection().prepareStatement(sql)) {
 			statement.execute();
-		} catch (Exception e) {
-			
 		}
 	}
 
