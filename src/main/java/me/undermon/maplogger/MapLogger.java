@@ -99,8 +99,8 @@ public class MapLogger implements Runnable {
 			String timestamp = ZonedDateTime.now().format(TIME_FORMAT);
 			String label = config.stream().filter(ms -> ms.identifier().equals(server.identifier())).findFirst().get().label();
 
-			Application.LOGGER.info("Logged '%s' [%s, %s, %s, %s, %d] at %s".formatted(
-				label, server.identifier(), server.map(), server.mode(), server.layer(), server.connected(), timestamp)
+			Application.LOGGER.info("Logged '%s' change map to %s %s %s with %d players at %s".formatted(
+				label, server.map(), server.mode(), server.layer(), server.connected(), timestamp)
 			);
 
 			try (var statement = connection.prepareStatement(logMapStatement)) {
