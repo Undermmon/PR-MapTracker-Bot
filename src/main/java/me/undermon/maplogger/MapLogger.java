@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -24,9 +25,6 @@ import me.undermon.realityapi.Servers;
 
 public class MapLogger implements Runnable {
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
-
-	private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
 	private static final String logMapStatement = """
@@ -96,11 +94,12 @@ public class MapLogger implements Runnable {
 		}
 
 		if (!sameMap) {
-			String timestamp = ZonedDateTime.now().format(TIME_FORMAT);
+			ZonedDateTime timestamp = ZonedDateTime.now();
 			String label = config.stream().filter(ms -> ms.identifier().equals(server.identifier())).findFirst().get().label();
 
 			Application.LOGGER.info("Logged map change on '%s' to %s %s %s with %d players at %s".formatted(
-				label, server.map(), server.mode(), server.layer(), server.connected(), timestamp)
+				label, server.map(), server.mode(), server.layer(), server.connected(), 
+				timestamp.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG)))
 			);
 
 			try (var statement = connection.prepareStatement(logMapStatement)) {
@@ -109,7 +108,7 @@ public class MapLogger implements Runnable {
 				statement.setString(3, server.mode().toString());
 				statement.setString(4, server.layer().toString());
 				statement.setInt(5, server.connected());
-				statement.setString(6, timestamp);
+				statement.setString(6, timestamp.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
 
 				statement.executeUpdate();
 			}
