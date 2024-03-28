@@ -38,7 +38,7 @@ public class Application {
 
 	private static DataSource setupDatabase() throws SQLException {
 		var dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:sample.db"); // TODO change db name
+		dataSource.setUrl("jdbc:sqlite:maplog.db");
 
 		createDatabaseSchema(dataSource);
 		
