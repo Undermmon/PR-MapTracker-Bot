@@ -23,6 +23,8 @@ import me.undermon.realityapi.Server;
 import me.undermon.realityapi.Servers;
 
 public class MapLogger implements Runnable {
+	private static final Duration TIMEOUT = Duration.ofSeconds(60);
+
 	private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
@@ -52,7 +54,7 @@ public class MapLogger implements Runnable {
 	@Override
 	public void run() {
 		try {
-			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(Duration.ofSeconds(10)).build();
+			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(TIMEOUT).build();
 			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
 			// String serverInfo = Files.readString(Paths.get("ServerInfo.json"));
 
