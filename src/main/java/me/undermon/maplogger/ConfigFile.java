@@ -43,6 +43,10 @@ public class ConfigFile implements Iterable<ConfigFile.MonitoredServer>{
 			}
 			this.fetchInterval = Duration.ofMinutes(desserialized.fetch_interval);
 			
+			if (desserialized.monitored_servers.size() < 1) {
+				throw new IllegalArgumentException();
+			}
+
 			this.monitored_servers = desserialized.monitored_servers;
 
 		} catch (Exception e) {
