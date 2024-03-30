@@ -5,7 +5,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 
 <groupId>me.undermon.maplogger</groupId>
 <artifactId>maplogger</artifactId>
-<version>24.3.25</version>
+<version>24.3.30</version>
 
 <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
