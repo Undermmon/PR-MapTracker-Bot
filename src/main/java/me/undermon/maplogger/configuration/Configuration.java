@@ -30,7 +30,6 @@ public class Configuration implements Iterable<MonitoredServer>{
 		String realitymod_api, String token, int fetch_interval, HashMap<String, String> monitored_servers
 	) {}
 
-	// TODO create default config.json and remove from gitignore
 	private Configuration() throws InvalidConfigurationException {
 		try {
 			var desserialized = GSON.fromJson(Files.readString(Paths.get("config.json")), ConfigFromJson.class);
