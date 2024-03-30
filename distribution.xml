@@ -19,6 +19,9 @@ xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assemb
 		<includes>
 			<include>README*</include>
 		</includes>
+		<excludes>
+			<exclude>*.backup</exclude>
+		</excludes>
 	</fileSet>
 	<fileSet>
 		<directory>${project.build.directory}/appassembler</directory>
