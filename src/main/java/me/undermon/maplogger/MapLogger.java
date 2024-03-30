@@ -16,14 +16,21 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import me.undermon.maplogger.ConfigFile.MonitoredServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import me.undermon.maplogger.configuration.Configuration;
+import me.undermon.maplogger.configuration.MonitoredServer;
 import me.undermon.realityapi.Layer;
 import me.undermon.realityapi.Map;
 import me.undermon.realityapi.Mode;
 import me.undermon.realityapi.Server;
 import me.undermon.realityapi.Servers;
 
-public class MapLogger implements Runnable {
+class MapLogger implements Runnable {
+	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
+	private static final DateTimeFormatter DATETIME_FORMATTER =
+		DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG);
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
@@ -38,13 +45,11 @@ public class MapLogger implements Runnable {
 			server = ?
 		) ORDER BY timestamp DESC LIMIT 1;
 		""";
-
 	
-	private final ConfigFile config;
+	private final Configuration config;
 	private final DataSource dataSource;
 
-
-	public MapLogger(ConfigFile config, DataSource dataSource) {
+	public MapLogger(Configuration config, DataSource dataSource) {
 		this.config = config;
 		this.dataSource = dataSource;
 	}
@@ -54,7 +59,6 @@ public class MapLogger implements Runnable {
 		try {
 			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(TIMEOUT).build();
 			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
-			// String serverInfo = Files.readString(Paths.get("ServerInfo.json"));
 
 			final List<Server> serversToBeLogged = Servers.from(response.body()).
 				stream().
@@ -68,9 +72,14 @@ public class MapLogger implements Runnable {
 			}
 
 		} catch (HttpTimeoutException e) {
-			Application.LOGGER.warn("Timed out connecting to %s at %s".formatted(config.realitymodAPI(), LocalDateTime.now()));
+			LOGGER.warn( 
+				"Timed out fetching %s after %s seconds at %s.".formatted(
+					config.realitymodAPI(),
+					TIMEOUT.toSeconds(),
+					LocalDateTime.now().format(DATETIME_FORMATTER))
+			);
 		} catch (Exception e) {
-			Application.LOGGER.error(e.getMessage());
+			LOGGER.error(e.getMessage());
 		}
 	}
 
@@ -97,9 +106,9 @@ public class MapLogger implements Runnable {
 			ZonedDateTime timestamp = ZonedDateTime.now();
 			String label = config.stream().filter(ms -> ms.identifier().equals(server.identifier())).findFirst().get().label();
 
-			Application.LOGGER.info("Logged map change on '%s' to %s %s %s with %d players at %s".formatted(
+			LOGGER.info("Logged map change on '%s' to %s %s %s with %d players at %s".formatted(
 				label, server.map(), server.mode(), server.layer(), server.connected(), 
-				timestamp.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG)))
+				timestamp.format(DATETIME_FORMATTER))
 			);
 
 			try (var statement = connection.prepareStatement(logMapStatement)) {

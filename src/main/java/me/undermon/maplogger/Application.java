@@ -3,42 +3,45 @@ package me.undermon.maplogger;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.interaction.SlashCommandBuilder;
+import org.javacord.api.entity.intent.Intent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteDataSource;
 
-import me.undermon.maplogger.ConfigFile.InvalidConfigurationFile;
+import me.undermon.maplogger.configuration.Configuration;
+import me.undermon.maplogger.discord.PlayedCommand;
 
 public class Application {
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-	static Logger LOGGER = LoggerFactory.getLogger("MapLogger");
+	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 
 	public static void main(String[] args) {
 		try {
-			ConfigFile config = ConfigFile.read();
+			Configuration config = Configuration.readFromDisk();
 			DataSource dataSource = setupDatabase();
-
 			MapLogger mapLogger = new MapLogger(config, dataSource);
 
-			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
+			// TODO uncoment this
+			// executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
 
-		} catch (InvalidConfigurationFile e) {
-			LOGGER.error("Invalid configuration file");
+			String invite = startDiscordBot(config, dataSource);
+
+			LOGGER.info("Started sucessfully, you can invite the bot with: " + invite);
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
+			LOGGER.error(e.toString());
+
+			executor.shutdown();
 		}
 	}
 
 	private static DataSource setupDatabase() throws SQLException {
 		var dataSource = new SQLiteDataSource();
-		dataSource.setUrl("jdbc:sqlite:maplog.db");
+		dataSource.setUrl("jdbc:sqlite:maplog.db"); // TODO Change db name
 
 		createDatabaseSchema(dataSource);
 		
@@ -63,9 +66,20 @@ public class Application {
 		}
 	}
 
-	private static void startBot(String token) throws Exception {
-		DiscordApi api = new DiscordApiBuilder().setToken(token).setAllIntents().login().join();
+	private static String startDiscordBot(Configuration configFile, DataSource dataSource) {
+		DiscordApi api = new DiscordApiBuilder().
+			setToken(configFile.token()).
+			setIntents(Intent.GUILDS).
+			login().
+			join();
 
-		new SlashCommandBuilder().setName("listar");
+		PlayedCommand.register(api);
+		PlayedCommand playedCommand = new PlayedCommand(configFile, dataSource);
+		
+
+		api.addSlashCommandCreateListener(playedCommand);
+		api.addAutocompleteCreateListener(playedCommand);
+
+		return api.createBotInvite();
 	}
 }
