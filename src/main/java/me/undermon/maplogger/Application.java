@@ -3,6 +3,7 @@ package me.undermon.maplogger;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -26,8 +27,7 @@ public final class Application {
 			DataSource dataSource = setupDatabase();
 			MapLogger mapLogger = new MapLogger(config, dataSource);
 
-			// TODO uncoment this
-			// executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
+			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
 
 			String invite = startDiscordBot(config, dataSource);
 
