@@ -32,7 +32,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	<dependency>
 		<groupId>me.undermon</groupId>
 		<artifactId>realityapi</artifactId> 
-		<version>24.3.25</version>
+		<version>24.3.30</version>
 	</dependency>
 
 	<dependency>
