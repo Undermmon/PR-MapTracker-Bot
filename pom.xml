@@ -28,7 +28,6 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 		<version>3.45.2.0</version>
 	</dependency>
 	
-	<!-- TODO Change to jitpack -->
 	<dependency>
 		<groupId>me.undermon</groupId>
 		<artifactId>realityapi</artifactId> 
