@@ -117,12 +117,12 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 	}
 
 	private long getInputTimeOption(SlashCommandInteraction command) {
-		return Math.abs(command.getOptionByName(TIME_OPTION).flatMap(t -> t.getLongValue()).orElse(1L));
+		return Math.abs(command.getOptionByName(TIME_OPTION).flatMap(t -> t.getLongValue()).orElse(3L));
 	}
 
 	private ChronoUnit getInputUnitOption(SlashCommandInteraction command) {
 		return command.getOptionByName(UNIT_OPTION).flatMap(SlashCommandInteractionOption::getStringValue)
-				.map(ChronoUnit::valueOf).orElse(ChronoUnit.DAYS);
+				.map(ChronoUnit::valueOf).orElse(ChronoUnit.HOURS);
 	}
 
 	private MonitoredServer getInputServerOption(SlashCommandInteraction command) {
