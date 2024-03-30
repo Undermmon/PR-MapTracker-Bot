@@ -8,25 +8,24 @@ Discord bot that logs played maps on Project Reality servers and allows queries 
 Go to a folder where you want to install the bot and download it
 > wget https://github.com/Undermmon/PRMapLoggerBot/releases/download/v24.3.30/maplogger-24.3.30.zip
 
-Then extract the zip file.
-
+Then extract the downloaded zip file.
 > unzip maplogger-24.3.30.zip
 
-Go to the *bin* folder of the newly extracted folder using 
+Go to the *bin* folder inside the newly extracted folder using 
 > cd maplogger-24.3.30/bin
 
-We need to edit the configuration file called *config.json*, to do that we are using *nano* a popular terminal file editor.
+Edit the configuration file called *config.json*, to do that we are using *nano* a popular terminal file editor.
 > nano config.json
 
-The file consists of the fallowing:
+The configuration consists of the fallowing:
 - realitymod_api -> link to reality mod's rest api that servers ServerInfo.json. You probably don't need to change this.
-- token -> You Discord bot token key, **you must replace \<YOUR BOT TOKEN\> with your own**. See Discord documentation for more information on bot accounts.
+- token -> You Discord bot token key, **you must replace \<YOUR BOT TOKEN\> with your own**.
 - fetch_interval -> How often **in minutes** the bot will retrieve information from  reality mod's api.
 - monitored_servers -> Defines which servers should get it's played maps logged, there **must be one or more** monitored servers. The first one is the default, it'll be the one used when no server is specified by users in commands.
 
-The \<SERVER NAME\> to be displayed on bot commands to users. It doesn't need to match your server name as it appears ingame.
+\<SERVER NAME\> is the server name to be displayed on the bot commands to users, i.g in autocomplete, etc. It doesn't need to match your server name as it appears ingame.
 
-The \<SERVER IDENTIFICER\> **must be replaced with the unique identifier of the server**. You can find a server id on ServerInfo.json returned by reality mod's api. 
+\<SERVER IDENTIFIER\> is the unique identifier of the server. You can find a server id on ServerInfo.json returned by reality mod's api. 
 
 ```JSON
 {
@@ -34,7 +33,7 @@ The \<SERVER IDENTIFICER\> **must be replaced with the unique identifier of the 
 	"token": "<YOUR BOT TOKEN>",
 	"fetch_interval": 5,
 	"monitored_servers": {
-		"<SERVER NAME>": "<SERVER IDENTIFICER>"
+		"<SERVER NAME>": "<SERVER IDENTIFIER>"
 	}
 }
 ```
@@ -44,7 +43,7 @@ Now run your bot. If you are on *Windows*, you can use *MapLogger.bat*
 
 > ./MapLogger
 
-If it gives you a *permission denied* give the file permission to be executed by your user 
+If you get the error *permission denied* give the file permission to be executed by your user 
 
 > chmod u+x MapLogger
 
@@ -52,7 +51,7 @@ It may take a few seconds to get the bot online. Once started it'll give a link 
 
 > Started sucessfully, you can invite the bot with: ...
 
-If your config.json is not properly set you will see this
+If your *config.json* is not properly set you will see this
 
 > [main] ERROR - me.undermon.maplogger.configuration.InvalidConfigurationException: ...
 
@@ -66,7 +65,7 @@ All log messages printed to the console are also appended to a file called *logs
 
 Played maps are persisted on a SQlite database called *maps.db* inside the *bin* directory.
 
-Bot *logs* and *maps.db* will be automatically created if not found.
+Both *logs* and *maps.db* will be automatically created if not found.
 
 ## Updating
 
