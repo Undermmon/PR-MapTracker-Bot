@@ -4,3 +4,4 @@ ServerInfo.json
 *.session.sql
 *.db
 logs
+*.backup
