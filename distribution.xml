@@ -7,11 +7,9 @@ xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assemb
 </formats>
 <fileSets>
 	<fileSet>
-		<directory>${project.basedir}</directory>
+		<directory>${project.basedir}/src/main/resources</directory>
 		<outputDirectory>/bin</outputDirectory>
 		<includes>
-			<include>README*</include>
-			<include>LICENSE*</include>
 			<include>config.json</include>
 		</includes>
 	</fileSet>

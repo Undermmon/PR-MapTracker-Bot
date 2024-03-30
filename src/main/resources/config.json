@@ -1,0 +1,8 @@
+{
+	"realitymod_api": "https://servers.realitymod.com/api/ServerInfo",
+	"token": "<YOUR BOT TOKEN>",
+	"fetch_interval": 5,
+	"monitored_servers": {
+		"<SERVER NAME>": "<SERVER IDENTIFICER>"
+	}
+}
