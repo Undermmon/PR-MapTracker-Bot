@@ -44,6 +44,8 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 	private static final String TIME_OPTION = "time";
 	private static final String UNIT_OPTION = "unit";
 	private static final String SERVER_OPTION = "server";
+	private static final String HOURS_CHOICE = "hours";
+	private static final String DAYS_CHOICE = "days";
 
 	private static final String COMMAND_NAME = "played";
 
@@ -92,23 +94,25 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 			String formatedRounds = this.formatToMessage(command.getLocale(), server, playedRounds);
 
 			if (formatedRounds.length() > 2000) {
-				respondLater.thenAccept(original -> original.setContent("TOO BIG").update());
+				String stripped = formatedRounds.
+					replace("*", "").
+					replace("🖥️ ", "").
+					replace("🗓️ ", "").
+					replace("🔹 ", "- ");
+
+				respondLater.thenAccept(original -> {
+					original.setContent("📎 " + Messages.messageTooLong(command.getLocale())).
+						addAttachment(stripped.getBytes(), Messages.mapAttachmentName(command.getLocale()) + ".txt").
+						update();
+				});
 			}
 
 			respondLater.thenAccept(original -> original.setContent(formatedRounds).update());
 
 		} catch (Exception e) {
-			String message;
-
-			if (command.getLocale() == DiscordLocale.PORTUGUESE_BRAZILIAN) {
-				message = "Não foi possível realizar a busca devido a problemas internos.";
-			} else {
-				message = "Unable to perform the search due to internal problems.";
-			}
-
 			LOGGER.error(e.getMessage());
 
-			respondLater.thenAccept(original -> original.setContent(message).update());
+			respondLater.thenAccept(original -> original.setContent(Messages.problemOnRetrieval(command.getLocale())).update());
 		}
 	}
 
@@ -135,23 +139,13 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 
 	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<GameRound> rounds) {
 		Locale locale = Locale.forLanguageTag(discordLocale.getLocaleCode());
-		String timeConnector;
-		String noRounds;
-
-		if (discordLocale == DiscordLocale.PORTUGUESE_BRAZILIAN) {
-			timeConnector = "ás";
-			noRounds = "Não foram encontradas partidas.";
-		} else {
-			timeConnector = "at";
-			noRounds = "No rounds were found.";
-		}
 
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("🖥️ **").append(server.label().toUpperCase()).append("**\n");
 
 		if (rounds.isEmpty()) {
-			builder.append("🔸 ").append(noRounds);
+			builder.append("🔸 ").append(Messages.noRoundsFound(discordLocale));
 		}
 
 		LocalDate last = null;
@@ -170,13 +164,12 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 				gameRound.map().getFullName(),
 				gameRound.mode().getShortName().toUpperCase(),
 				gameRound.layer().getShortName().toUpperCase(),
-				timeConnector,
+				Messages.timeConnector(discordLocale),
 				gameRound.startTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale)),
-				gameRound.startTime().getZone().getDisplayName(TextStyle.SHORT, locale)
+				gameRound.startTime().getZone().getDisplayName(TextStyle.SHORT, locale).substring(0, 3)
 			));
 		}
 
-		builder.append("-".repeat(2000));
 		return builder.toString();
 	}
 
@@ -207,15 +200,10 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 
 	private void failIfSearchSpamIsTooBig(SlashCommandInteraction command, Duration search) {
 		if (search.compareTo(Duration.of(730, ChronoUnit.DAYS)) > 0) {
-			String message;
-
-			if (command.getLocale() == DiscordLocale.PORTUGUESE_BRAZILIAN) {
-				message = "Você pode listar o histórico de mapas de até seis meses atrás.";
-			} else {
-				message = "You can list map history up to six months ago.";
-			}
-
-			command.createImmediateResponder().setContent(message).setFlags(MessageFlag.EPHEMERAL).respond();
+			command.createImmediateResponder().
+				setContent(Messages.searchSpamTooBig(command.getLocale())).
+				setFlags(MessageFlag.EPHEMERAL).
+				respond();
 		}
 	}
 
@@ -231,20 +219,20 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 			setLongMaxValue(180).
 			setMinLength(1).
 			setName(TIME_OPTION).
-			setDescription("List the last played maps in this amount of time.").
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "tempo").
-			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "Lista os últimos mapas jogadados neste período de tempo.").
+			setDescription(Messages.timeOptionDesc(DiscordLocale.ENGLISH_US)).
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.timeOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.timeOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			build();
 
 		SlashCommandOptionChoice hour = new SlashCommandOptionChoiceBuilder().
-			setName("hours").
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "horas").
+			setName(HOURS_CHOICE).
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.hourChoiceName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			setValue(ChronoUnit.HOURS.name()).
 			build();
 
 		SlashCommandOptionChoice day = new SlashCommandOptionChoiceBuilder().
-			setName("days"). 
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "dias").
+			setName(DAYS_CHOICE). 
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.dayChoiceName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			setValue(ChronoUnit.DAYS.name()).
 			build();
 
@@ -253,26 +241,26 @@ public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCr
 			addChoice(hour).
 			addChoice(day).
 			setName(UNIT_OPTION).
-			setDescription("Time unit to be used for the search.").
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "unidade").
-			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "Unidade de tempo a ser usada na busca.").
+			setDescription(Messages.unitOptionDesc(DiscordLocale.ENGLISH_US)).
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.unitOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.unitOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			build();
 
 		SlashCommandOption server = new SlashCommandOptionBuilder().
 			setType(SlashCommandOptionType.STRING).
 			setRequired(false).
 			setName(SERVER_OPTION).
-			setDescription("List the played maps on this server").
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "servidor").
-			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "Lista os mapas jogados neste servidor").
+			setDescription(Messages.serverOptionDesc(DiscordLocale.ENGLISH_US)).
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.serverOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.serverOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			setAutocompletable(true).
 			build();
 
 		new SlashCommandBuilder().
 			setName(COMMAND_NAME).
-			setDescription("View the map history of a server.").
-			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "jogados").
-			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, "Veja histórico de mapas de um servidor.").
+			setDescription(Messages.playedCommandDesc(DiscordLocale.ENGLISH_US)).
+			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.playedCommandName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.playedCommandDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			addOption(time).
 			addOption(timeUnit).
 			addOption(server).
