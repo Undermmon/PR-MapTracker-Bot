@@ -27,7 +27,7 @@ import me.undermon.realityapi.Mode;
 import me.undermon.realityapi.Server;
 import me.undermon.realityapi.Servers;
 
-class MapLogger implements Runnable {
+final class MapLogger implements Runnable {
 	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final DateTimeFormatter DATETIME_FORMATTER =
 		DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG);

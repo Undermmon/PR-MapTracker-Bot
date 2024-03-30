@@ -16,7 +16,7 @@ import org.sqlite.SQLiteDataSource;
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.discord.PlayedCommand;
 
-public class Application {
+public final class Application {
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 

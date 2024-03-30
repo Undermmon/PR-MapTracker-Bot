@@ -39,7 +39,7 @@ import me.undermon.realityapi.Layer;
 import me.undermon.realityapi.Map;
 import me.undermon.realityapi.Mode;
 
-public class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
+public final class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final String TIME_OPTION = "time";
 	private static final String UNIT_OPTION = "unit";

@@ -17,7 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.MalformedJsonException;
 
-public class Configuration implements Iterable<MonitoredServer>{
+public final class Configuration implements Iterable<MonitoredServer>{
 	private static final Gson GSON = new Gson();
 	
 	private String token;
