@@ -35,8 +35,8 @@ public final class Messages {
 		return get("no_rounds_found", locale);
 	}
 
-	public static String timeConnector(DiscordLocale locale) {
-		return get("time_connector", locale);
+	public static String timeConnective(DiscordLocale locale) {
+		return get("time_connective", locale);
 	}
 
 	public static String searchSpamTooBig(DiscordLocale locale) {
@@ -87,8 +87,8 @@ public final class Messages {
 		return get("played_comm_desc", locale);
 	}
 
-	public static String timeZoneConnector(DiscordLocale locale) {
-		return get("timezone_connector", locale);
+	public static String timeZoneConnective(DiscordLocale locale) {
+		return get("timezone_connective", locale);
 	}
 
 	private static final String get(String entry, DiscordLocale locale) {

@@ -149,7 +149,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 		StringBuilder builder = new StringBuilder().
 			append("🖥️ **").
 			append(server.label().toUpperCase()).
-			append("** %s ".formatted(Messages.timeZoneConnector(discordLocale))).
+			append("** %s ".formatted(Messages.timeZoneConnective(discordLocale))).
 			append(configFile.getTimezone().getDisplayName(TextStyle.FULL, locale)).
 			append(".\n");
 
@@ -174,7 +174,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 				gameRound.map().getFullName(),
 				gameRound.mode().getShortName().toUpperCase(),
 				gameRound.layer().getShortName().toUpperCase(),
-				Messages.timeConnector(discordLocale),
+				Messages.timeConnective(discordLocale),
 				roundStartTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
 			));
 		}
