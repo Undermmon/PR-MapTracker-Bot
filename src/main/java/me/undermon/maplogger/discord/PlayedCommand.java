@@ -6,8 +6,6 @@
 
 package me.undermon.maplogger.discord;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -15,11 +13,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.sql.DataSource;
 
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageFlag;
@@ -39,11 +34,11 @@ import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import me.undermon.maplogger.Round;
+import me.undermon.maplogger.RoundRepository;
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.configuration.MonitoredServer;
-import me.undermon.realityapi.Layer;
 import me.undermon.realityapi.Map;
-import me.undermon.realityapi.Mode;
 
 public final class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
@@ -55,23 +50,13 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 
 	private static final String COMMAND_NAME = "played";
 
-	private static final String roundsQuerySQL = """
-		SELECT map, mode, layer, players, timestamp FROM history WHERE (
-			server = ? AND datetime(timestamp) > datetime(?)
-		);
-		""";
-
-	private record GameRound(Map map, Mode mode, Layer layer, ZonedDateTime startTime) {
-
-	}
-
 	private final Configuration configFile;
-	private final DataSource dataSource;
+	private final RoundRepository roundRepo;
 	private final List<SlashCommandOptionChoice> targetServerChoices;
 
-	public PlayedCommand(Configuration configFile, DataSource dataSource) {
+	public PlayedCommand(Configuration configFile, RoundRepository roundRepo) {
 		this.configFile = configFile;
-		this.dataSource = dataSource;
+		this.roundRepo = roundRepo;
 		this.targetServerChoices = configFile.stream().
 			map(server -> SlashCommandOptionChoice.create(server.label(), server.identifier())).
 			toList();
@@ -95,7 +80,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 		var respondLater = command.respondLater(true);
 
 		try {
-			List<GameRound> playedRounds = this.queryGameRoundsOnDatabase(server, searchSpam);
+			List<Round> playedRounds = this.roundRepo.queryRoundsOnDatabase(server.identifier(), searchSpam);
 
 			String formatedRounds = this.formatToMessage(command.getLocale(), server, playedRounds);
 
@@ -117,8 +102,9 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			respondLater.thenAccept(original -> original.setContent(formatedRounds).update());
 
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
+			LOGGER.error(e.toString());
 
+			e.printStackTrace();
 			respondLater.thenAccept(original -> original.setContent(Messages.problemOnRetrieval(command.getLocale())).update());
 		}
 	}
@@ -144,7 +130,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			orElse(configFile.getDefaultMonitoredServer());
 	}
 
-	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<GameRound> rounds) {
+	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<Round> rounds) {
 		Locale locale = Locale.forLanguageTag(discordLocale.getLocaleCode());
 
 		StringBuilder builder = new StringBuilder().
@@ -160,8 +146,8 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 
 		LocalDate last = null;
 		
-		for (GameRound gameRound : rounds) {
-			ZonedDateTime roundStartTime = gameRound.startTime().withZoneSameInstant(configFile.getTimezone());
+		for (Round Round : rounds) {
+			ZonedDateTime roundStartTime = Round.startTime().withZoneSameInstant(configFile.getTimezone());
 
 			if (!roundStartTime.toLocalDate().equals(last)) {
 				builder.
@@ -172,41 +158,16 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			last = roundStartTime.toLocalDate();
 
 			builder.append("%s **%s (%s, %s)** %s %s\n".formatted(
-				(gameRound.map() == Map.UNKNOWN) ? "🔸" : "🔹",
-				(gameRound.map() == Map.UNKNOWN) ? "???" : gameRound.map().getFullName(),
-				gameRound.mode().getShortName().toUpperCase(),
-				gameRound.layer().getShortName().toUpperCase(),
+				(Round.map() == Map.UNKNOWN) ? "🔸" : "🔹",
+				(Round.map() == Map.UNKNOWN) ? "???" : Round.map().getFullName(),
+				Round.mode().getShortName().toUpperCase(),
+				Round.layer().getShortName().toUpperCase(),
 				Messages.timeConnective(discordLocale),
 				roundStartTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
 			));
 		}
 
 		return builder.toString();
-	}
-
-	private List<GameRound> queryGameRoundsOnDatabase(MonitoredServer server, Duration searchSpam) throws SQLException {
-		try (var connection = this.dataSource.getConnection()) {
-			try (var statement = connection.prepareStatement(roundsQuerySQL)) {
-
-				statement.setString(1, server.identifier());
-				statement.setString(2, ZonedDateTime.now().minus(searchSpam).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-
-				ResultSet results = statement.executeQuery();
-
-				List<GameRound> rounds = new ArrayList<>();
-
-				while (results.next()) {
-					rounds.add(new GameRound(
-						Map.fromString(results.getString(1)),
-						Mode.fromString(results.getString(2)),
-						Layer.fromString(results.getString(3)),
-						ZonedDateTime.parse(results.getString(5)))
-					);
-				}
-
-				return rounds;
-			}
-		}
 	}
 
 	private void failIfSearchSpamIsTooBig(SlashCommandInteraction command, Duration search) {

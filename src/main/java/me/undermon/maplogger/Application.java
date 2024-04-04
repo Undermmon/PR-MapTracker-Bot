@@ -30,12 +30,12 @@ public final class Application {
 	public static void main(String[] args) {
 		try {
 			Configuration config = Configuration.readFromDisk();
-			DataSource dataSource = setupDatabase();
-			MapLogger mapLogger = new MapLogger(config, dataSource);
+			RoundRepository roundRepo = new RoundRepository(setupDatabase());
 
+			MapLogger mapLogger = new MapLogger(config, roundRepo);
 			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
 
-			String invite = startDiscordBot(config, dataSource);
+			String invite = startDiscordBot(config, roundRepo);
 
 			LOGGER.info("Started sucessfully, you can invite the bot with: " + invite);
 		} catch (Exception e) {
@@ -48,31 +48,11 @@ public final class Application {
 	private static DataSource setupDatabase() throws SQLException {
 		var dataSource = new SQLiteDataSource();
 		dataSource.setUrl("jdbc:sqlite:maps.db");
-
-		createDatabaseSchema(dataSource);
 		
 		return dataSource;
 	}
 
-	private static void createDatabaseSchema(DataSource dataSource) throws SQLException {
-		final String sql = """
-			CREATE TABLE IF NOT EXISTS history (
-				id INTEGER PRIMARY KEY,
-				server TEXT NOT NULL,
-				map TEXT NOT NULL,
-				mode TEXT NOT NULL,
-				layer TEXT NOT NULL,
-				players INTEGER NOT NULL,
-				timestamp TEXT NOT NULL
-			);
-			""";
-
-		try (var statement = dataSource.getConnection().prepareStatement(sql)) {
-			statement.execute();
-		}
-	}
-
-	private static String startDiscordBot(Configuration configFile, DataSource dataSource) {
+	private static String startDiscordBot(Configuration configFile, RoundRepository roundRepo) {
 		DiscordApi api = new DiscordApiBuilder().
 			setToken(configFile.token()).
 			setIntents(Intent.GUILDS).
@@ -80,7 +60,7 @@ public final class Application {
 			join();
 
 		PlayedCommand.register(api);
-		PlayedCommand playedCommand = new PlayedCommand(configFile, dataSource);
+		PlayedCommand playedCommand = new PlayedCommand(configFile, roundRepo);
 		
 
 		api.addSlashCommandCreateListener(playedCommand);
