@@ -146,33 +146,36 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<GameRound> rounds) {
 		Locale locale = Locale.forLanguageTag(discordLocale.getLocaleCode());
 
-		StringBuilder builder = new StringBuilder();
-
-		builder.append("🖥️ **").append(server.label().toUpperCase()).append("**\n");
+		StringBuilder builder = new StringBuilder().
+			append("🖥️ **").
+			append(server.label().toUpperCase()).
+			append("** %s ".formatted(Messages.timeZoneConnector(discordLocale))).
+			append(configFile.getTimezone().getDisplayName(TextStyle.FULL, locale)).
+			append(".\n");
 
 		if (rounds.isEmpty()) {
 			builder.append("🔸 ").append(Messages.noRoundsFound(discordLocale));
 		}
 
 		LocalDate last = null;
-
+		
 		for (GameRound gameRound : rounds) {
-			if (!gameRound.startTime().toLocalDate().equals(last)) {
+			ZonedDateTime roundStartTime = gameRound.startTime().withZoneSameInstant(configFile.getTimezone());
+
+			if (!roundStartTime.toLocalDate().equals(last)) {
 				builder.
 					append("\n🗓️ **").
-					append(gameRound.startTime().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))).
+					append(roundStartTime.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))).
 					append("**\n");
 			}
+			last = roundStartTime.toLocalDate();
 
-			last = gameRound.startTime().toLocalDate();
-			
-			builder.append("🔹 **%s (%s, %s)** %s %s %s\n".formatted(
+			builder.append("🔹 **%s (%s, %s)** %s %s\n".formatted(
 				gameRound.map().getFullName(),
 				gameRound.mode().getShortName().toUpperCase(),
 				gameRound.layer().getShortName().toUpperCase(),
 				Messages.timeConnector(discordLocale),
-				gameRound.startTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale)),
-				gameRound.startTime().getZone().getDisplayName(TextStyle.SHORT, locale).substring(0, 3)
+				roundStartTime.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
 			));
 		}
 

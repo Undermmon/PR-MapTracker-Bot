@@ -10,7 +10,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.DateTimeException;
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -27,13 +29,14 @@ public final class Configuration implements Iterable<MonitoredServer>{
 	private static final Gson GSON = new Gson();
 	
 	private String token;
+	private ZoneId timezone;
 	private Duration fetchInterval;
 	private Map<String, String> monitored_servers;
 	private URI realityAPI;
 	private MonitoredServer defaultMonitoredServer;
 
 	private record ConfigFromJson(
-		String realitymod_api, String token, int fetch_interval, HashMap<String, String> monitored_servers
+		String realitymod_api, String token, String timezone,  int fetch_interval, HashMap<String, String> monitored_servers
 	) {}
 
 	private Configuration() throws InvalidConfigurationException {
@@ -47,6 +50,8 @@ public final class Configuration implements Iterable<MonitoredServer>{
 			if (desserialized.fetch_interval < 1) {
 				throw new IllegalArgumentException("fetch interval must be one or greater");
 			}
+
+			this.timezone = ZoneId.of(desserialized.timezone);
 
 			this.fetchInterval = Duration.ofMinutes(desserialized.fetch_interval);
 			
@@ -73,9 +78,11 @@ public final class Configuration implements Iterable<MonitoredServer>{
 		} catch (IllegalArgumentException e) {
 			throw new InvalidConfigurationException(e.getMessage());
 
-		} catch (Exception e) {
+		} catch (DateTimeException e) {
 			throw new InvalidConfigurationException(e.getMessage());
 
+		} catch (Exception e) {
+			throw new InvalidConfigurationException(e.getMessage());
 		}
 	}
 
@@ -86,7 +93,11 @@ public final class Configuration implements Iterable<MonitoredServer>{
 	public URI realitymodAPI() {
 		return this.realityAPI;
 	}
-	
+
+	public ZoneId getTimezone() {
+		return timezone;
+	}
+
 	public Duration fetchInterval() {
 		return this.fetchInterval;
 	}

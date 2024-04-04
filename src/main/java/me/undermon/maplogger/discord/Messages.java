@@ -87,6 +87,10 @@ public final class Messages {
 		return get("played_comm_desc", locale);
 	}
 
+	public static String timeZoneConnector(DiscordLocale locale) {
+		return get("timezone_connector", locale);
+	}
+
 	private static final String get(String entry, DiscordLocale locale) {
 		try {
 			return ResourceBundle.getBundle(NAME, Locale.forLanguageTag(locale.getLocaleCode()), CONTROL).
