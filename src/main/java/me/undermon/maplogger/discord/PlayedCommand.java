@@ -104,7 +104,8 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 					replace("*", "").
 					replace("🖥️ ", "").
 					replace("🗓️ ", "").
-					replace("🔹 ", "- ");
+					replace("🔸", "-").
+					replace("🔹", "-");
 
 				respondLater.thenAccept(original -> {
 					original.setContent("📎 " + Messages.messageTooLong(command.getLocale())).
@@ -154,7 +155,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			append(".\n");
 
 		if (rounds.isEmpty()) {
-			builder.append("🔸 ").append(Messages.noRoundsFound(discordLocale));
+			builder.append("\n🔸 ").append(Messages.noRoundsFound(discordLocale));
 		}
 
 		LocalDate last = null;
@@ -170,8 +171,9 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			}
 			last = roundStartTime.toLocalDate();
 
-			builder.append("🔹 **%s (%s, %s)** %s %s\n".formatted(
-				gameRound.map().getFullName(),
+			builder.append("%s **%s (%s, %s)** %s %s\n".formatted(
+				(gameRound.map() == Map.UNKNOWN) ? "🔸" : "🔹",
+				(gameRound.map() == Map.UNKNOWN) ? "???" : gameRound.map().getFullName(),
 				gameRound.mode().getShortName().toUpperCase(),
 				gameRound.layer().getShortName().toUpperCase(),
 				Messages.timeConnective(discordLocale),
