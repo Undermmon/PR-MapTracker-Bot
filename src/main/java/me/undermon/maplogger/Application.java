@@ -32,7 +32,7 @@ public final class Application {
 			Configuration config = Configuration.readFromDisk();
 			RoundRepository roundRepo = new RoundRepository(setupDatabase());
 
-			MapLogger mapLogger = new MapLogger(config, roundRepo);
+			RoundsTracker mapLogger = new RoundsTracker(config, roundRepo);
 			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
 
 			String invite = startDiscordBot(config, roundRepo);

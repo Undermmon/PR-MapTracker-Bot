@@ -23,7 +23,7 @@ import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.configuration.MonitoredServer;
 import me.undermon.realityapi.Servers;
 
-final class MapLogger implements Runnable {
+final class RoundsTracker implements Runnable {
 	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
@@ -31,7 +31,7 @@ final class MapLogger implements Runnable {
 	private final Configuration config;
 	private final RoundRepository roundRepo;
 
-	public MapLogger(Configuration config, RoundRepository roundRepo) {
+	public RoundsTracker(Configuration config, RoundRepository roundRepo) {
 		this.config = config;
 		this.roundRepo = roundRepo;
 	}
