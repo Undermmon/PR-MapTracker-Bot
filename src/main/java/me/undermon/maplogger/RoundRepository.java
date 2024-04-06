@@ -119,7 +119,6 @@ public class RoundRepository {
 					}
 				}
 
-				System.out.println(round + " -> " + round.sameServerAndLevel(lastRound));
 				if (lastRound == null || !round.sameServerAndLevel(lastRound)) {
 					ZonedDateTime timestamp = ZonedDateTime.now();
 
