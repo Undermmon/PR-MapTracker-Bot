@@ -92,11 +92,11 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 					replace("🔸", "-").
 					replace("🔹", "-");
 
-				respondLater.thenAccept(original -> {
+				respondLater.thenAccept(original -> 
 					original.setContent("📎 " + Messages.messageTooLong(command.getLocale())).
 						addAttachment(stripped.getBytes(), Messages.mapAttachmentName(command.getLocale()) + ".txt").
-						update();
-				});
+						update()
+				);
 			}
 
 			respondLater.thenAccept(original -> original.setContent(formatedRounds).update());
@@ -157,7 +157,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			}
 			last = roundStartTime.toLocalDate();
 
-			builder.append("%s **%s (%s, %s)** %s %s\n".formatted(
+			builder.append("%s **%s (%s, %s)** %s %s%n".formatted(
 				(Round.map() == Map.UNKNOWN) ? "🔸" : "🔹",
 				(Round.map() == Map.UNKNOWN) ? "???" : Round.map().getFullName(),
 				Round.mode().getShortName().toUpperCase(),
