@@ -23,6 +23,10 @@ public final class Messages {
 		}
 	};
 
+	private Messages() {
+		// Do nothing
+	}
+
 	public static String messageTooLong(DiscordLocale locale) {
 		return get("too_long", locale);
 	}
