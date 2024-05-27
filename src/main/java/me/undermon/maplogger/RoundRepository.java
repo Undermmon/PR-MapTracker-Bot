@@ -16,6 +16,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.sqlite.SQLiteDataSource;
+
 import me.undermon.realityapi.Layer;
 import me.undermon.realityapi.Map;
 import me.undermon.realityapi.Mode;
@@ -30,7 +32,7 @@ public class RoundRepository {
 	private static final String PLAYERS = "players";
 	private static final String TIMESTAMP = "timestamp";
 
-	private DataSource dataSource;
+	private final DataSource dataSource;
 
 	final String createTableSQL = """
 		CREATE TABLE IF NOT EXISTS history (
@@ -136,4 +138,12 @@ public class RoundRepository {
 			}
 		}
 	}
+
+	public static RoundRepository usingSQLite() throws SQLException {
+		var dataSource = new SQLiteDataSource();
+		dataSource.setUrl("jdbc:sqlite:maps.db");
+
+		return new RoundRepository(dataSource);	
+	}
+
 }
