@@ -58,6 +58,8 @@ final class RoundsTracker implements Runnable {
 					LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG))
 				)
 			);
+		} catch (ThreadDeath e) { 
+			throw e;
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage());
 		}

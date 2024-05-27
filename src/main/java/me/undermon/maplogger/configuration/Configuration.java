@@ -10,7 +10,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -61,7 +60,7 @@ public final class Configuration implements Iterable<MonitoredServer>{
 
 			this.monitored_servers = desserialized.monitored_servers;
 
-			this.defaultMonitoredServer = this.stream().findFirst().get();
+			this.defaultMonitoredServer = this.stream().findFirst().orElseThrow();
 
 		} catch (JsonSyntaxException e) {
 			if (e.getCause() instanceof NumberFormatException) {
@@ -74,12 +73,6 @@ public final class Configuration implements Iterable<MonitoredServer>{
 
 		} catch (URISyntaxException e) {
 			throw new InvalidConfigurationException("link to RealityMod's api is not a valid url");
-
-		} catch (IllegalArgumentException e) {
-			throw new InvalidConfigurationException(e.getMessage());
-
-		} catch (DateTimeException e) {
-			throw new InvalidConfigurationException(e.getMessage());
 
 		} catch (Exception e) {
 			throw new InvalidConfigurationException(e.getMessage());
