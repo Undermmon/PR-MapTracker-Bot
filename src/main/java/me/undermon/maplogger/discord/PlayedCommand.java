@@ -194,17 +194,21 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			setDescription(Messages.timeOptionDesc(DiscordLocale.ENGLISH_US)).
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.timeOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.timeOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.timeOptionName(DiscordLocale.SPANISH)).
+			addDescriptionLocalization(DiscordLocale.SPANISH, Messages.timeOptionDesc(DiscordLocale.SPANISH)).
 			build();
 
 		SlashCommandOptionChoice hour = new SlashCommandOptionChoiceBuilder().
 			setName(HOURS_CHOICE).
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.hourChoiceName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.hourChoiceName(DiscordLocale.SPANISH)).
 			setValue(ChronoUnit.HOURS.name()).
 			build();
 
 		SlashCommandOptionChoice day = new SlashCommandOptionChoiceBuilder().
 			setName(DAYS_CHOICE). 
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.dayChoiceName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.dayChoiceName(DiscordLocale.SPANISH)).
 			setValue(ChronoUnit.DAYS.name()).
 			build();
 
@@ -216,6 +220,8 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			setDescription(Messages.unitOptionDesc(DiscordLocale.ENGLISH_US)).
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.unitOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.unitOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.unitOptionName(DiscordLocale.SPANISH)).
+			addDescriptionLocalization(DiscordLocale.SPANISH, Messages.unitOptionDesc(DiscordLocale.SPANISH)).
 			build();
 
 		SlashCommandOption server = new SlashCommandOptionBuilder().
@@ -225,6 +231,8 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			setDescription(Messages.serverOptionDesc(DiscordLocale.ENGLISH_US)).
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.serverOptionName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.serverOptionDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.serverOptionName(DiscordLocale.SPANISH)).
+			addDescriptionLocalization(DiscordLocale.SPANISH, Messages.serverOptionDesc(DiscordLocale.SPANISH)).
 			setAutocompletable(true).
 			build();
 
@@ -233,6 +241,8 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			setDescription(Messages.playedCommandDesc(DiscordLocale.ENGLISH_US)).
 			addNameLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.playedCommandName(DiscordLocale.PORTUGUESE_BRAZILIAN)).
 			addDescriptionLocalization(DiscordLocale.PORTUGUESE_BRAZILIAN, Messages.playedCommandDesc(DiscordLocale.PORTUGUESE_BRAZILIAN)).
+			addNameLocalization(DiscordLocale.SPANISH, Messages.playedCommandName(DiscordLocale.SPANISH)).
+			addDescriptionLocalization(DiscordLocale.SPANISH, Messages.playedCommandDesc(DiscordLocale.SPANISH)).
 			addOption(time).
 			addOption(timeUnit).
 			addOption(server).
