@@ -37,7 +37,7 @@ import me.undermon.maplogger.Round;
 import me.undermon.maplogger.RoundRepository;
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.configuration.MonitoredServer;
-import me.undermon.realityapi.Map;
+import me.undermon.realityapi.spy.Map;
 
 public final class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
 	private static final String TIME_OPTION = "time";

@@ -18,9 +18,10 @@ import javax.sql.DataSource;
 
 import org.sqlite.SQLiteDataSource;
 
-import me.undermon.realityapi.Layer;
-import me.undermon.realityapi.Map;
-import me.undermon.realityapi.Mode;
+import me.undermon.realityapi.spy.Layer;
+import me.undermon.realityapi.spy.Map;
+import me.undermon.realityapi.spy.Mode;
+
 
 public class RoundRepository {
 

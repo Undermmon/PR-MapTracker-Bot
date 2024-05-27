@@ -8,10 +8,11 @@ package me.undermon.maplogger;
 
 import java.time.ZonedDateTime;
 
-import me.undermon.realityapi.Layer;
-import me.undermon.realityapi.Map;
-import me.undermon.realityapi.Mode;
-import me.undermon.realityapi.Server;
+import me.undermon.realityapi.spy.Layer;
+import me.undermon.realityapi.spy.Map;
+import me.undermon.realityapi.spy.Mode;
+import me.undermon.realityapi.spy.Server;
+
 
 public record Round(String server, Map map, Mode mode, Layer layer, int players, ZonedDateTime startTime) {
 

@@ -29,9 +29,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 	</dependency>
 	
 	<dependency>
-		<groupId>me.undermon</groupId>
-		<artifactId>realityapi</artifactId> 
-		<version>24.3.30</version>
+		<groupId>me.undermon.realityapi</groupId>
+		<artifactId>spy</artifactId> 
+		<version>24.5.27</version>
 	</dependency>
 
 	<dependency>

@@ -22,7 +22,8 @@ import org.tinylog.Logger;
 
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.configuration.MonitoredServer;
-import me.undermon.realityapi.Servers;
+import me.undermon.realityapi.spy.Servers;
+
 
 final class RoundsTracker implements Runnable {
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
