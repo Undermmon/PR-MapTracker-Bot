@@ -34,31 +34,31 @@ public class RoundRepository {
 
 	final String createTableSQL = """
 		CREATE TABLE IF NOT EXISTS history (
-			%s INTEGER PRIMARY KEY,
-			%s TEXT NOT NULL,
-			%s TEXT NOT NULL,
-			%s TEXT NOT NULL,
-			%s TEXT NOT NULL,
-			%s INTEGER NOT NULL,
-			%s TEXT NOT NULL
+		  %s INTEGER PRIMARY KEY,
+		  %s TEXT NOT NULL,
+		  %s TEXT NOT NULL,
+		  %s TEXT NOT NULL,
+		  %s TEXT NOT NULL,
+		  %s INTEGER NOT NULL,
+		  %s TEXT NOT NULL
 		);
 		""".formatted(ID, SERVER, MAP, MODE, LAYER, PLAYERS, TIMESTAMP);
 	
-	private static final String queryRoundsByTimeSpamSQL = """
+	private static final String ROUNDS_BY_TIMESPAM_SQL = """
 		SELECT %s, %s, %s, %s, %s FROM history WHERE (
-			server = ? AND datetime(timestamp) > datetime(?)
+		  server = ? AND datetime(timestamp) > datetime(?)
 		);
 		""".formatted(MAP, MODE, LAYER, PLAYERS, TIMESTAMP);
 
-	private static final String queryLastRoundSQL = """
+	private static final String LAST_ROUND_SQL = """
 		SELECT %s, %s, %s, %s, %s, %s FROM history WHERE (
-			server = ?
+		  server = ?
 		) ORDER BY timestamp DESC LIMIT 1;
 		""".formatted(SERVER, MAP, MODE, LAYER, PLAYERS, TIMESTAMP);
 
-	private static final String persistRoundSQL = """
+	private static final String SAVE_ROUND_SQL = """
 		INSERT INTO history (
-			server, map, mode, layer, players, timestamp
+		  server, map, mode, layer, players, timestamp
 		) VALUES (?, ?, ?, ?, ?, ?);
 		""";
 
@@ -72,7 +72,7 @@ public class RoundRepository {
 
 	public List<Round> queryRoundsOnDatabase(String identifier, Duration searchSpam) throws SQLException {
 		try (var connection = this.dataSource.getConnection()) {
-			try (var statement = connection.prepareStatement(queryRoundsByTimeSpamSQL)) {
+			try (var statement = connection.prepareStatement(ROUNDS_BY_TIMESPAM_SQL)) {
 				
 				statement.setString(1, identifier);
 				statement.setString(2, ZonedDateTime.now().minus(searchSpam).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
@@ -103,7 +103,7 @@ public class RoundRepository {
 			for (Round round : rounds) {
 				Round lastRound = null;
 
-				try (var read = connection.prepareStatement(queryLastRoundSQL)) {
+				try (var read = connection.prepareStatement(LAST_ROUND_SQL)) {
 					read.setString(1, round.server());
 					ResultSet result = read.executeQuery();
 
@@ -122,7 +122,7 @@ public class RoundRepository {
 				if (lastRound == null || !round.sameServerAndLevel(lastRound)) {
 					ZonedDateTime timestamp = ZonedDateTime.now();
 
-					try (var statement = connection.prepareStatement(persistRoundSQL)) {
+					try (var statement = connection.prepareStatement(SAVE_ROUND_SQL)) {
 						statement.setString(1, round.server());
 						statement.setString(2, round.map().toString());
 						statement.setString(3, round.mode().toString());
