@@ -99,7 +99,7 @@ public final class Messages {
 		} catch (Exception e) {
 			Logger.warn(e.getMessage());
 			
-			return "";
+			return "??LOCALE??";
 		}
 	}
 }
