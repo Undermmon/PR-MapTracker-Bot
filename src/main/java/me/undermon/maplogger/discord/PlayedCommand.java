@@ -134,8 +134,6 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<Round> rounds) {
 		Locale locale = LocaleConverter.fromDiscord(discordLocale);
 
-		Logger.info("Locale used to format: {}", locale.toLanguageTag());
-
 		StringBuilder builder = new StringBuilder().
 			append("🖥️ **").
 			append(server.label().toUpperCase()).
