@@ -19,15 +19,20 @@ import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.discord.PlayedCommand;
 
 public final class Application {
-	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private static final ScheduledExecutorService executor =
+		Executors.newSingleThreadScheduledExecutor(RoundsTracker.threadFactory());
 
 	public static void main(String[] args) {
 		try {
 			Configuration config = Configuration.readFromDisk();
 			RoundRepository roundRepo = RoundRepository.usingSQLite();
 
-			RoundsTracker mapLogger = new RoundsTracker(config, roundRepo);
-			executor.scheduleWithFixedDelay(mapLogger, 0, config.fetchInterval().getSeconds(), TimeUnit.SECONDS);
+			executor.scheduleWithFixedDelay(
+				new RoundsTracker(config, roundRepo),
+				0,
+				config.fetchInterval().getSeconds(),
+				TimeUnit.SECONDS
+			);
 
 			String invite = startDiscordBot(config, roundRepo);
 

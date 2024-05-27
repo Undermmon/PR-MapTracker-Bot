@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.tinylog.Logger;
 
@@ -48,6 +50,7 @@ final class RoundsTracker implements Runnable {
 
 			this.roundRepo.saveAnyNew(rounds);	
 
+			Logger.info("LOGGING");
 			// TODO log map
 
 		} catch (HttpTimeoutException e) {
@@ -63,6 +66,16 @@ final class RoundsTracker implements Runnable {
 		} catch (Exception e) {
 			Logger.error(e.getMessage());
 		}
+	}
+
+	public static ThreadFactory threadFactory() {
+		return runnable -> {
+			Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+
+			thread.setName("RoundsTracker");
+
+			return thread;
+		};
 	}
 
 }
