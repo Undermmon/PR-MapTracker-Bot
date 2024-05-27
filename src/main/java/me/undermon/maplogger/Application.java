@@ -6,7 +6,6 @@
 
 package me.undermon.maplogger;
 
-import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +42,7 @@ public final class Application {
 		}
 	}
 
-	private static DataSource setupDatabase() throws SQLException {
+	private static DataSource setupDatabase() {
 		var dataSource = new SQLiteDataSource();
 		dataSource.setUrl("jdbc:sqlite:maps.db");
 		
