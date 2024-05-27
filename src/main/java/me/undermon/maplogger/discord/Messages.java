@@ -95,12 +95,7 @@ public final class Messages {
 	private static final String get(String entry, Locale locale) {
 		
 		try {
-			String string = ResourceBundle.getBundle(NAME, locale, CONTROL).
-			getString(entry.toLowerCase());
-			
-			Logger.info("{} / {} / {}", entry, locale.toLanguageTag(), string);
-
-			return string;
+			return ResourceBundle.getBundle(NAME, locale, CONTROL).getString(entry.toLowerCase());
 		} catch (Exception e) {
 			Logger.warn(e.getMessage());
 			
