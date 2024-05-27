@@ -16,16 +16,14 @@ import javax.sql.DataSource;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteDataSource;
+import org.tinylog.Logger;
 
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.discord.PlayedCommand;
 
 public final class Application {
 	private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 
 	public static void main(String[] args) {
 		try {
@@ -37,9 +35,9 @@ public final class Application {
 
 			String invite = startDiscordBot(config, roundRepo);
 
-			LOGGER.info("Started sucessfully, you can invite the bot with: " + invite);
+			Logger.info("Started sucessfully, you can invite the bot with: {}", invite);
 		} catch (Exception e) {
-			LOGGER.error(e.toString());
+			Logger.error(e.toString());
 
 			executor.shutdown();
 		}

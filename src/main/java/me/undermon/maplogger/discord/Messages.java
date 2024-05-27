@@ -10,11 +10,9 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.javacord.api.interaction.DiscordLocale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tinylog.Logger;
 
 public final class Messages {
-	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final String NAME = "messages";
 	private static final ResourceBundle.Control CONTROL = new ResourceBundle.Control() {
 		@Override
@@ -100,7 +98,7 @@ public final class Messages {
 			return ResourceBundle.getBundle(NAME, Locale.forLanguageTag(locale.getLocaleCode()), CONTROL).
 				getString(entry.toLowerCase());
 		} catch (Exception e) {
-			LOGGER.warn(e.getMessage());
+			Logger.warn(e.getMessage());
 			
 			return "";
 		}

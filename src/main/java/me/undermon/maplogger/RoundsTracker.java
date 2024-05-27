@@ -16,15 +16,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tinylog.Logger;
 
 import me.undermon.maplogger.configuration.Configuration;
 import me.undermon.maplogger.configuration.MonitoredServer;
 import me.undermon.realityapi.Servers;
 
 final class RoundsTracker implements Runnable {
-	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 	
@@ -48,10 +46,12 @@ final class RoundsTracker implements Runnable {
 				map(Round::from).
 				toList();
 
-			this.roundRepo.saveAnyNew(rounds);			
+			this.roundRepo.saveAnyNew(rounds);	
+
+			// TODO log map
 
 		} catch (HttpTimeoutException e) {
-			LOGGER.warn( 
+			Logger.warn( 
 				"Timed out fetching %s after %s seconds at %s.".formatted(
 					config.realitymodAPI(),
 					TIMEOUT.toSeconds(),
@@ -61,7 +61,7 @@ final class RoundsTracker implements Runnable {
 		} catch (ThreadDeath e) { 
 			throw e;
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
+			Logger.error(e.getMessage());
 		}
 	}
 

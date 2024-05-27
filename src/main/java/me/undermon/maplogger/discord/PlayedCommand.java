@@ -31,8 +31,7 @@ import org.javacord.api.interaction.SlashCommandOptionChoiceBuilder;
 import org.javacord.api.interaction.SlashCommandOptionType;
 import org.javacord.api.listener.interaction.AutocompleteCreateListener;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tinylog.Logger;
 
 import me.undermon.maplogger.Round;
 import me.undermon.maplogger.RoundRepository;
@@ -41,7 +40,6 @@ import me.undermon.maplogger.configuration.MonitoredServer;
 import me.undermon.realityapi.Map;
 
 public final class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
-	private static final Logger LOGGER = LoggerFactory.getLogger("Console");
 	private static final String TIME_OPTION = "time";
 	private static final String UNIT_OPTION = "unit";
 	private static final String SERVER_OPTION = "server";
@@ -102,7 +100,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 			respondLater.thenAccept(original -> original.setContent(formatedRounds).update());
 
 		} catch (Exception e) {
-			LOGGER.error(e.toString());
+			Logger.error(e.toString());
 
 			e.printStackTrace();
 			respondLater.thenAccept(original -> original.setContent(Messages.problemOnRetrieval(command.getLocale())).update());
