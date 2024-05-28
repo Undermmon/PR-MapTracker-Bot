@@ -21,14 +21,14 @@ import java.util.concurrent.ThreadFactory;
 import org.tinylog.Logger;
 
 import me.undermon.maplogger.configuration.Configuration;
-import me.undermon.maplogger.configuration.MonitoredServer;
+import me.undermon.maplogger.configuration.TrackedServer;
 import me.undermon.realityapi.spy.Servers;
 
 
 final class RoundsTracker implements Runnable {
 	private static final Duration TIMEOUT = Duration.ofSeconds(60);
 	private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-	
+
 	private final Configuration config;
 	private final RoundRepository roundRepo;
 
@@ -40,12 +40,12 @@ final class RoundsTracker implements Runnable {
 	@Override
 	public void run() {
 		try {
-			var request = HttpRequest.newBuilder().uri(this.config.realitymodAPI()).GET().timeout(TIMEOUT).build();
+			var request = HttpRequest.newBuilder().uri(this.config.serverInfoAPI()).GET().timeout(TIMEOUT).build();
 			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
 
 			final List<Round> rounds = Servers.from(response.body()).
 				stream().
-				filter(server -> config.stream().map(MonitoredServer::identifier).toList().contains(server.identifier())).
+				filter(server -> config.stream().map(TrackedServer::id).toList().contains(server.identifier())).
 				map(Round::from).
 				toList();
 
@@ -57,7 +57,7 @@ final class RoundsTracker implements Runnable {
 		} catch (HttpTimeoutException e) {
 			Logger.warn( 
 				"Timed out fetching %s after %s seconds at %s.".formatted(
-					config.realitymodAPI(),
+					config.serverInfoAPI(),
 					TIMEOUT.toSeconds(),
 					LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.LONG))
 				)

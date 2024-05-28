@@ -36,7 +36,7 @@ import org.tinylog.Logger;
 import me.undermon.maplogger.Round;
 import me.undermon.maplogger.RoundRepository;
 import me.undermon.maplogger.configuration.Configuration;
-import me.undermon.maplogger.configuration.MonitoredServer;
+import me.undermon.maplogger.configuration.TrackedServer;
 import me.undermon.realityapi.spy.Map;
 
 public final class PlayedCommand implements SlashCommandCreateListener, AutocompleteCreateListener {
@@ -56,7 +56,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 		this.configFile = configFile;
 		this.roundRepo = roundRepo;
 		this.targetServerChoices = configFile.stream().
-			map(server -> SlashCommandOptionChoice.create(server.label(), server.identifier())).
+			map(server -> SlashCommandOptionChoice.create(server.name(), server.id())).
 			toList();
 	}
 
@@ -70,7 +70,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 	
 		long time = this.getInputTimeOption(command);
 		ChronoUnit unit = this.getInputUnitOption(command);
-		MonitoredServer server = this.getInputServerOption(command);
+		TrackedServer server = this.getInputServerOption(command);
 		Duration searchSpam = Duration.of(time, unit);
 
 		this.failIfSearchSpamIsTooBig(command, searchSpam);
@@ -78,7 +78,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 		var respondLater = command.respondLater(true);
 
 		try {
-			List<Round> playedRounds = this.roundRepo.queryRoundsOnDatabase(server.identifier(), searchSpam);
+			List<Round> playedRounds = this.roundRepo.queryRoundsOnDatabase(server.id(), searchSpam);
 
 			String formatedRounds = this.formatToMessage(command.getLocale(), server, playedRounds);
 
@@ -119,24 +119,24 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 				.map(ChronoUnit::valueOf).orElse(ChronoUnit.HOURS);
 	}
 
-	private MonitoredServer getInputServerOption(SlashCommandInteraction command) {
+	private TrackedServer getInputServerOption(SlashCommandInteraction command) {
 		String idFromChoice = command.
 			getOptionByName(SERVER_OPTION).
 			flatMap(SlashCommandInteractionOption::getStringValue).
 			orElse("");
 		
 		return configFile.stream().
-			filter(t -> t.identifier().equals(idFromChoice)).
+			filter(t -> t.id().equals(idFromChoice)).
 			findFirst().
-			orElse(configFile.getDefaultMonitoredServer());
+			orElse(configFile.primaryTrackedServer());
 	}
 
-	private String formatToMessage(DiscordLocale discordLocale, MonitoredServer server, List<Round> rounds) {
+	private String formatToMessage(DiscordLocale discordLocale, TrackedServer server, List<Round> rounds) {
 		Locale locale = LocaleConverter.fromDiscord(discordLocale);
 
 		StringBuilder builder = new StringBuilder().
 			append("🖥️ **").
-			append(server.label().toUpperCase()).
+			append(server.name().toUpperCase()).
 			append("** %s ".formatted(Messages.timeZoneConnective(locale))).
 			append(configFile.getTimezone().getDisplayName(TextStyle.FULL, locale)).
 			append(".\n");

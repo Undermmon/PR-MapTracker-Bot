@@ -27,6 +27,7 @@ public final class Application {
 			Configuration config = Configuration.readFromDisk();
 			RoundRepository roundRepo = RoundRepository.usingSQLite();
 
+			Logger.info(config.token());
 			executor.scheduleWithFixedDelay(
 				new RoundsTracker(config, roundRepo),
 				0,
