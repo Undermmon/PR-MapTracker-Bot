@@ -6,6 +6,7 @@
 
 package me.undermon.maplogger.configuration;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
@@ -21,6 +22,8 @@ import java.util.stream.StreamSupport;
 
 public final class Configuration implements Iterable<TrackedServer>{
 
+	private static final String FILE_NAME = "maptracker.properties";
+
 	private String token;
 	private Duration fetchInterval;
 	private List<TrackedServer> servers = new ArrayList<>();
@@ -31,14 +34,18 @@ public final class Configuration implements Iterable<TrackedServer>{
 	}
 
 	private Configuration() {
-		try (FileReader fileReader = new FileReader("maptracker.properties")) {
+		try (FileReader fileReader = new FileReader(FILE_NAME)) {
 			Properties properties = new Properties();
 			properties.load(fileReader);
 
-			this.token = properties.getProperty("token");
+			this.token = properties.getProperty("token").strip();
 
 			if (this.token.isBlank()) {
-				throw new InvalidConfigurationException();
+				throw new ConfigurationFileException("Token must not be blank.");
+			}
+
+			if (this.token.contains(" ") || this.token.length() != 70) {
+				throw new ConfigurationFileException("Token is malformed.");
 			}
 
 			this.fetchInterval = Duration.ofMinutes(Integer.parseInt(properties.getProperty("fetchInterval").strip()));
@@ -48,16 +55,26 @@ public final class Configuration implements Iterable<TrackedServer>{
 			var serverIds = properties.getProperty("serverIds").split(" ");
 
 			if (serverIds.length != serverNames.length) {
-				throw new InvalidConfigurationException();
+				throw new ConfigurationFileException("Number of server names and ids don't match.");
 			}
 
 			for (int i = 0; i < serverIds.length; i++) {
 				this.servers.add(new TrackedServer(serverNames[i].replace("_", " "), serverIds[i]));
 			}
 
-		} catch (IOException | URISyntaxException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		} 
+		} catch (FileNotFoundException e) {
+			throw new ConfigurationFileException("No configuration file found.");
+		} catch (URISyntaxException e) {
+			throw new ConfigurationFileException("ServerInfoAPI is not a valid URL.");
+		} catch (NumberFormatException e) {
+			throw new ConfigurationFileException("Fetch interval is not a number.");
+		} catch (IllegalArgumentException e) {
+			throw new ConfigurationFileException("Contains malformed Unicode escapes.");
+		} catch (ArithmeticException e) {
+			throw new ConfigurationFileException("Fetch interval is too large.");
+		} catch (IOException e) {
+			throw new ConfigurationFileException("Unknown problem ocurred while reading the file.");
+		}
 	}
 
 	public String token() {

@@ -6,11 +6,11 @@
 
 package me.undermon.maplogger.configuration;
 
-public final class InvalidConfigurationException extends Exception {
+public final class ConfigurationFileException extends RuntimeException {
 
-	public InvalidConfigurationException() {}
+	public ConfigurationFileException() {}
 
-	public InvalidConfigurationException(String message) {
+	public ConfigurationFileException(String message) {
 		super(message);
 	}
 }
