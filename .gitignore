@@ -1,7 +1,7 @@
 /target
-/config.json
-ServerInfo.json
+logs
+*.json
 *.session.sql
 *.db
-logs
 *.backup
+*.properties
