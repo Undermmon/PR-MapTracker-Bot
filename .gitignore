@@ -1,7 +1,12 @@
 /target
 logs
-*.json
+
 *.session.sql
 *.db
 *.backup
+
+*.json
+!src/main/resources/*.json
+
 *.properties
+!src/main/resources/*.properties
