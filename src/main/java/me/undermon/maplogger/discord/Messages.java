@@ -6,6 +6,8 @@
 
 package me.undermon.maplogger.discord;
 
+import java.text.MessageFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -52,16 +54,26 @@ public final class Messages {
 		return get("time_option_name", locale);
 	}
 
-	public static String timeOptionDesc(Locale locale) {
-		return get("time_option_desc", locale);
+	public static String timeOptionDesc(Locale locale, int timespan) {
+		return MessageFormat.format(get("time_option_desc", locale), timespan);
 	}
 
 	public static String unitOptionName(Locale locale) {
 		return get("unit_option_name", locale);
 	}
 
-	public static String unitOptionDesc(Locale locale) {
-		return get("unit_option_desc", locale);
+	public static String unitOptionDesc(Locale locale, ChronoUnit unit) {
+		String unitName = "???";
+		
+		if (unit.equals(ChronoUnit.DAYS)) {
+			unitName = dayChoiceName(locale);
+		}
+		
+		if (unit.equals(ChronoUnit.HOURS)) {
+			unitName = hourChoiceName(locale);
+		}
+
+		return MessageFormat.format(get("unit_option_desc", locale), unitName);
 	}
 
 	public static String serverOptionName(Locale locale) {

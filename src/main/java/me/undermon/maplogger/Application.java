@@ -51,7 +51,7 @@ public final class Application {
 			login().
 			join();
 
-		PlayedCommand.register(api);
+		PlayedCommand.register(api, configFile);
 		PlayedCommand playedCommand = new PlayedCommand(configFile, roundRepo);
 
 		api.addSlashCommandCreateListener(playedCommand);
