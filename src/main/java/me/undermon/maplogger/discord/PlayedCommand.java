@@ -78,7 +78,7 @@ public final class PlayedCommand implements SlashCommandCreateListener, Autocomp
 		var respondLater = command.respondLater(true);
 
 		try {
-			List<Round> playedRounds = this.roundRepo.queryRoundsOnDatabase(server.id(), searchSpam);
+			List<Round> playedRounds = this.roundRepo.queryByTimespam(server.id(), searchSpam);
 
 			String formatedRounds = this.formatToMessage(command.getLocale(), server, playedRounds);
 

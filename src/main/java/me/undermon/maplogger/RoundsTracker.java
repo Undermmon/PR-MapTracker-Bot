@@ -43,16 +43,20 @@ final class RoundsTracker implements Runnable {
 			var request = HttpRequest.newBuilder().uri(this.config.serverInfoAPI()).GET().timeout(TIMEOUT).build();
 			var response = HTTP_CLIENT.send(request, BodyHandlers.ofString());
 
-			final List<Round> rounds = Servers.from(response.body()).
-				stream().
-				filter(server -> config.stream().map(TrackedServer::id).toList().contains(server.identifier())).
-				map(Round::from).
-				toList();
+			if (response.statusCode() == 200) {
+				final List<Round> rounds = Servers.from(response.body()).
+					stream().
+					filter(server -> config.stream().map(TrackedServer::id).toList().contains(server.identifier())).
+					map(Round::from).
+					toList();
+					
+					List<Round> saveRounds = this.roundRepo.saveAnyNew(rounds);
 
-			this.roundRepo.saveAnyNew(rounds);	
+					saveRounds.forEach(round -> Logger.info("Recorded {}", round));
 
-			Logger.info("LOGGING");
-			// TODO log map
+			} else {
+				Logger.warn("Response code from PRSpy API is {}.", response.statusCode());
+			}
 
 		} catch (HttpTimeoutException e) {
 			Logger.warn( 
@@ -65,7 +69,7 @@ final class RoundsTracker implements Runnable {
 		} catch (ThreadDeath e) { 
 			throw e;
 		} catch (Exception e) {
-			Logger.error(e.getMessage());
+			Logger.error(e);
 		}
 	}
 
