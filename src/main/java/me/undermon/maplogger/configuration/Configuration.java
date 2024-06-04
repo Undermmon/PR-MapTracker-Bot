@@ -44,7 +44,7 @@ public final class Configuration implements Iterable<TrackedServer>{
 			this.token = this.parseToken(properties);
 			this.fetchInterval = this.parseFetchInterval(properties);
 			this.realityAPI = this.parsePRSpyURL(properties);
-			this.defaultTimespan = Integer.parseInt(properties.getProperty("defaultTimespan").strip());
+			this.defaultTimespan = this.parseDefaultTimespan(properties);
 			this.defaulUnit = this.parseDefaultUnit(properties);
 			this.servers = this.parseTrackedServers(properties);
 
@@ -54,6 +54,14 @@ public final class Configuration implements Iterable<TrackedServer>{
 			throw new ConfigurationFileException("File contains malformed Unicode escapes.");
 		} catch (IOException e) {
 			throw new ConfigurationFileException("Unknown problem ocurred while reading the file.");
+		}
+	}
+
+	private int parseDefaultTimespan(Properties properties) {
+		try {
+			return Integer.parseInt(properties.getProperty("defaultTimespan").strip());
+		} catch (NumberFormatException e) {
+			throw new ConfigurationFileException("Default timespan is not a number.");
 		}
 	}
 
