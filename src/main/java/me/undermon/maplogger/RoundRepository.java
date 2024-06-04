@@ -140,7 +140,7 @@ public class RoundRepository {
 						statement.setString(3, round.mode().toString());
 						statement.setString(4, round.layer().toString());
 						statement.setInt(5, round.players());
-						statement.setString(6, ZonedDateTime.now().format(DATE_TIME_FORMATTER));
+						statement.setString(6, round.startTime().format(DATE_TIME_FORMATTER));
 
 						statement.addBatch();
 					}
