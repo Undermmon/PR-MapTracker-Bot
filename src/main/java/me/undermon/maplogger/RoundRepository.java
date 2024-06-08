@@ -117,7 +117,9 @@ public class RoundRepository {
 								Mode.fromString(resultSet.getString(MODE)),
 								Layer.fromString(resultSet.getString(LAYER)),
 								resultSet.getInt(PLAYERS),
-								ZonedDateTime.parse(resultSet.getString("latest_timestamp"), DATE_TIME_FORMATTER)));
+								ZonedDateTime.parse(resultSet.getString("latest_timestamp"), DATE_TIME_FORMATTER)
+						)
+				);
 			}
 
 			return rounds;
