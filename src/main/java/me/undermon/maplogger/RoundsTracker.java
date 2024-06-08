@@ -52,10 +52,27 @@ final class RoundsTracker implements Runnable {
 					
 					List<Round> saveRounds = this.roundRepo.saveAnyNew(rounds);
 
-					saveRounds.forEach(round -> Logger.info("Recorded {}", round));
+					saveRounds.forEach(round -> {
+
+						String serverName = this.config.stream().
+							filter(trackedServer -> trackedServer.id().equals(round.server())).
+							findFirst().
+							map(TrackedServer::name).
+							orElse(round.server());
+
+
+						Logger.info("Map change on '{}' to '{}' {} {} with {} players at {}.", 
+								serverName,
+								round.map().getFullName(),
+								round.mode().getShortName(),
+								round.layer().getShortName(),
+								round.players(),
+								round.startTime().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm z"))
+						);
+					});
 
 			} else {
-				Logger.warn("Response code from PRSpy API is {}.", response.statusCode());
+				Logger.warn("Response code from PRSPY is {}.", response.statusCode());
 			}
 
 		} catch (HttpTimeoutException e) {
